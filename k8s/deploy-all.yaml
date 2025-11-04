@@ -1,0 +1,406 @@
+---
+# Namespace for all CTF resources
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bsidesf-ctf
+
+---
+# ConfigMap for shared configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ctf-config
+  namespace: bsidesf-ctf
+data:
+  DATABASE_HOST: ctf-db
+  REDIS_HOST: ctf-cache
+
+---
+# Secrets (should be created separately with actual values)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ctf-secrets
+  namespace: bsidesf-ctf
+type: Opaque
+stringData:
+  database-url: "mysql+pymysql://ctfd:CHANGE_PASSWORD@ctf-db/ctfd"
+  jwt-secret: "CHANGE_THIS_SECRET_KEY"
+  mysql-root-password: "CHANGE_ROOT_PASSWORD"
+  mysql-password: "CHANGE_PASSWORD"
+
+---
+# MariaDB Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctf-db
+  namespace: bsidesf-ctf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ctf-db
+  template:
+    metadata:
+      labels:
+        app: ctf-db
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:10.11
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: mysql-root-password
+        - name: MYSQL_USER
+          value: ctfd
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: mysql-password
+        - name: MYSQL_DATABASE
+          value: ctfd
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: db-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: ctf-db-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctf-db
+  namespace: bsidesf-ctf
+spec:
+  selector:
+    app: ctf-db
+  ports:
+  - port: 3306
+    targetPort: 3306
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ctf-db-pvc
+  namespace: bsidesf-ctf
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# Redis Cache
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctf-cache
+  namespace: bsidesf-ctf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ctf-cache
+  template:
+    metadata:
+      labels:
+        app: ctf-cache
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctf-cache
+  namespace: bsidesf-ctf
+spec:
+  selector:
+    app: ctf-cache
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+---
+# CTFd Platform
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctfd
+  namespace: bsidesf-ctf
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ctfd
+  template:
+    metadata:
+      labels:
+        app: ctfd
+    spec:
+      containers:
+      - name: ctfd
+        image: ctfd/ctfd:latest
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: ctf-secrets
+              key: database-url
+        - name: REDIS_URL
+          value: redis://ctf-cache:6379
+        - name: WORKERS
+          value: "4"
+        - name: REVERSE_PROXY
+          value: "true"
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: uploads
+          mountPath: /var/uploads
+        - name: logs
+          mountPath: /var/log/CTFd
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: ctfd-uploads-pvc
+      - name: logs
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctfd
+  namespace: bsidesf-ctf
+spec:
+  selector:
+    app: ctfd
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ctfd-uploads-pvc
+  namespace: bsidesf-ctf
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Example Challenge: runit (Binary Exploitation)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge-runit
+  namespace: bsidesf-ctf
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: challenge-runit
+  template:
+    metadata:
+      labels:
+        app: challenge-runit
+    spec:
+      containers:
+      - name: runit
+        image: bsidesf/runit:latest  # Build and push your image
+        ports:
+        - containerPort: 5252
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        securityContext:
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge-runit
+  namespace: bsidesf-ctf
+spec:
+  selector:
+    app: challenge-runit
+  ports:
+  - port: 5252
+    targetPort: 5252
+    nodePort: 30252
+  type: NodePort
+
+---
+# Example Web Challenge: kookie
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge-kookie
+  namespace: bsidesf-ctf
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: challenge-kookie
+  template:
+    metadata:
+      labels:
+        app: challenge-kookie
+    spec:
+      containers:
+      - name: kookie
+        image: bsidesf/kookie:latest  # Build and push your image
+        ports:
+        - containerPort: 4455
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge-kookie
+  namespace: bsidesf-ctf
+spec:
+  selector:
+    app: challenge-kookie
+  ports:
+  - port: 4455
+    targetPort: 4455
+
+---
+# Ingress for web challenges and platform
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ctf-ingress
+  namespace: bsidesf-ctf
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - ctf.example.com
+    secretName: ctf-tls
+  rules:
+  - host: ctf.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ctfd
+            port:
+              number: 80
+      - path: /challenges/kookie
+        pathType: Prefix
+        backend:
+          service:
+            name: challenge-kookie
+            port:
+              number: 4455
+
+---
+# NetworkPolicy to isolate challenges
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: challenge-isolation
+  namespace: bsidesf-ctf
+spec:
+  podSelector:
+    matchLabels:
+      type: challenge
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: ctfd
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ctfd
+
+---
+# ResourceQuota to prevent resource exhaustion
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ctf-quota
+  namespace: bsidesf-ctf
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: 40Gi
+    limits.cpu: "40"
+    limits.memory: 80Gi
+    persistentvolumeclaims: "10"
+
+---
+# LimitRange for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ctf-limits
+  namespace: bsidesf-ctf
+spec:
+  limits:
+  - max:
+      memory: "1Gi"
+      cpu: "1000m"
+    min:
+      memory: "64Mi"
+      cpu: "100m"
+    default:
+      memory: "256Mi"
+      cpu: "500m"
+    defaultRequest:
+      memory: "128Mi"
+      cpu: "250m"
+    type: Container

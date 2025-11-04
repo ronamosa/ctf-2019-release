@@ -1,0 +1,407 @@
+# BSidesSF 2019 CTF Challenge Configuration
+# This file defines all challenges for import into CTF platform
+
+challenges:
+  # Network Analysis
+  - id: table-tennis
+    name: "Table Tennis"
+    category: "Network Analysis"
+    description: "Analyze this PCAP file captured from a ping pong match"
+    points: 100
+    flag: "CTF{T4BLE-T3NN1S-L0L}"
+    type: "file"
+    files:
+      - "table-tennis/challenge/table-tennis.pcap"
+
+  - id: thekey
+    name: "The Key"
+    category: "Network Analysis"
+    description: "USB keyboard traffic analysis with vim commands"
+    points: 200
+    flag: "CTF{dr0pp3d_th3_k3y5}"
+    type: "file"
+    files:
+      - "thekey/challenge/thekey.pcap"
+
+  - id: zippy
+    name: "Zippy"
+    category: "Network Analysis"
+    description: "Analyze network traffic and extract hidden data"
+    points: 150
+    flag: "CTF{z1ppy_l1ttl3_thr34d5}"
+    type: "file"
+    files:
+      - "zippy/challenge/zippy.pcap"
+
+  # Binary Exploitation
+  - id: runit
+    name: "runit"
+    category: "Binary Exploitation"
+    description: "Basic shellcode execution challenge. Can you get a shell?"
+    points: 100
+    flag: "CTF{Everything_is_easier_in_ring0}"
+    type: "network"
+    port: 5252
+    deployment:
+      dockerfile: "runit/challenge/Dockerfile"
+      service_port: 5252
+
+  - id: runitplusplus
+    name: "runit++"
+    category: "Binary Exploitation"
+    description: "Like runit but more challenging"
+    points: 200
+    flag: "CTF{d0nt_l3t_th3_d00r_h1t_y0u_0n_th3_w4y_0ut}"
+    type: "network"
+    port: 5253
+    deployment:
+      dockerfile: "runitplusplus/challenge/Dockerfile"
+      service_port: 5253
+
+  - id: genius
+    name: "Genius"
+    category: "Binary Exploitation"
+    description: "Game Boy reverse engineering with Game Genie codes"
+    points: 300
+    flag: "CTF{SH4-Z4M!}"
+    type: "network"
+    port: 5254
+    deployment:
+      dockerfile: "genius/challenge/Dockerfile"
+      service_port: 5254
+
+  - id: water-dragon
+    name: "Water Dragon"
+    category: "Binary Exploitation"
+    description: "Exploit wu-ftpd heap overflow vulnerability"
+    points: 350
+    flag: "CTF{All_I_n33d_is_sun}"
+    type: "network"
+    port: 21
+    deployment:
+      dockerfile: "water-dragon/challenge/Dockerfile"
+      service_port: 21
+
+  - id: fastflag
+    name: "Fast Flag"
+    category: "Binary Exploitation"
+    description: "Speed matters in this binary exploitation challenge"
+    points: 250
+    flag: "CTF{f4st3r_th4n_l1ght}"
+    type: "network"
+    port: 5255
+    deployment:
+      dockerfile: "fastflag/challenge/Dockerfile"
+      service_port: 5255
+
+  - id: straw-clutcher
+    name: "Straw Clutcher"
+    category: "Binary Exploitation"
+    description: "Grasping at straws? Try exploiting this service"
+    points: 300
+    flag: "CTF{clutch1ng_str4ws_s1nc3_2019}"
+    type: "network"
+    port: 5256
+    deployment:
+      dockerfile: "straw-clutcher/challenge/Dockerfile"
+      service_port: 5256
+
+  - id: slowfire
+    name: "Slowfire"
+    category: "Binary Exploitation"
+    description: "Low and slow exploitation challenge"
+    points: 400
+    flag: "CTF{sl0w_4nd_st34dy_w1ns_th3_r4c3}"
+    type: "network"
+    port: 5257
+    deployment:
+      dockerfile: "slowfire/challenge/Dockerfile"
+      service_port: 5257
+
+  # Cryptography
+  - id: crust
+    name: "Crust"
+    category: "Cryptography"
+    description: "DNS-based command channel with XOR encryption"
+    points: 250
+    flag: "CTF{i_h0pe_my_d0ma1ns_d0nt_all_g3t_burn3d}"
+    type: "network"
+    port: 53
+    deployment:
+      dockerfile: "crust/challenge/Dockerfile"
+      service_port: 53
+
+  - id: sendhalp
+    name: "Send Halp"
+    category: "Cryptography"
+    description: "RC4-like stream cipher challenge"
+    points: 200
+    flag: "CTF{h4lp_1s_0n_th3_w4y}"
+    type: "file"
+    files:
+      - "sendhalp/distfiles/encrypted_file.enc"
+      - "sendhalp/distfiles/README.txt"
+
+  - id: decrypto
+    name: "Decrypto"
+    category: "Cryptography"
+    description: "Padding oracle attack challenge"
+    points: 300
+    flag: "CTF{p4dd1ng_0r4cl3s_4r3_b4d_mm0k4y}"
+    type: "network"
+    port: 5258
+    deployment:
+      dockerfile: "decrypto/challenge/Dockerfile"
+      service_port: 5258
+
+  - id: rsaos
+    name: "RSA OS"
+    category: "Cryptography"
+    description: "RSA math challenge - factor this!"
+    points: 350
+    flag: "CTF{sm4ll_pr1m3s_4r3_b4d}"
+    type: "network"
+    port: 5259
+    deployment:
+      dockerfile: "rsaos/challenge/Dockerfile"
+      service_port: 5259
+
+  # Web Vulnerabilities
+  - id: cloud2clown
+    name: "Cloud to Clown"
+    category: "Web"
+    description: "SSRF to cloud metadata service exploitation"
+    points: 200
+    flag: "CTF{pleaz_n0_SSRF_Ծ_Ծ}"
+    type: "web"
+    path: "/cloud2clown"
+    deployment:
+      dockerfile: "cloud2clown/Dockerfile"
+      service_port: 8080
+
+  - id: kookie
+    name: "Kookie"
+    category: "Web"
+    description: "Cookie manipulation and session hijacking"
+    points: 150
+    flag: "CTF{3mbr4c3_th3_c00k13_d4rk51d3}"
+    type: "web"
+    path: "/kookie"
+    deployment:
+      dockerfile: "kookie/Dockerfile"
+      service_port: 4455
+
+  - id: pick-tac-toe
+    name: "Pick-Tac-Toe"
+    category: "Web"
+    description: "Client-side validation bypass in tic-tac-toe game"
+    points: 100
+    flag: "CTF{f0rg3d_t0_w1n}"
+    type: "web"
+    path: "/pick-tac-toe"
+    deployment:
+      dockerfile: "pick-tac-toe/Dockerfile"
+      service_port: 8888
+
+  - id: mixer
+    name: "Mixer"
+    category: "Web"
+    description: "ECB mode encryption weakness"
+    points: 250
+    flag: "CTF{ECB-IS-BAD-MMKAY}"
+    type: "web"
+    path: "/mixer"
+    deployment:
+      dockerfile: "mixer/Dockerfile"
+      service_port: 9292
+
+  - id: futurella
+    name: "Futurella"
+    category: "Web"
+    description: "Time-based password reset vulnerability"
+    points: 200
+    flag: "CTF{1t5_4ll_1n_th3_t1m1ng}"
+    type: "web"
+    path: "/futurella"
+    deployment:
+      dockerfile: "futurella/Dockerfile"
+      service_port: 5000
+
+  - id: flagsrv
+    name: "Flag Server"
+    category: "Web"
+    description: "Simple web service with hidden flag"
+    points: 100
+    flag: "CTF{F14G_53RV3R}"
+    type: "web"
+    path: "/flagsrv"
+    deployment:
+      dockerfile: "flagsrv/Dockerfile"
+      service_port: 3000
+
+  - id: mainframe
+    name: "Mainframe"
+    category: "Web"
+    description: "Legacy system exploitation"
+    points: 300
+    flag: "CTF{w3lc0m3_t0_th3_m41nfr4m3}"
+    type: "web"
+    path: "/mainframe"
+    deployment:
+      dockerfile: "mainframe/Dockerfile"
+      service_port: 8000
+
+  - id: pythia
+    name: "Pythia"
+    category: "Web"
+    description: "Python web application vulnerability"
+    points: 250
+    flag: "CTF{pyth14_kn0ws_4ll}"
+    type: "web"
+    path: "/pythia"
+    deployment:
+      dockerfile: "pythia/Dockerfile"
+      service_port: 5001
+
+  # Forensics & Multimedia
+  - id: delta
+    name: "Delta"
+    category: "Forensics"
+    description: "Image metadata and steganography"
+    points: 100
+    flag: "CTF{m3t4d4t4_m4tt3r5}"
+    type: "file"
+    files:
+      - "delta/challenge/delta.png"
+
+  - id: diskimage
+    name: "Disk Image"
+    category: "Forensics"
+    description: "Multi-stage forensic extraction from FAT12 filesystem hidden in PNG"
+    points: 400
+    flag: "CTF{WH3R3_W3_G01NG_W3_D0NT_N33D_EYES.BMP}"
+    type: "file"
+    files:
+      - "diskimage/challenge/diskimage.png"
+
+  - id: dawnupshaw
+    name: "Dawn Upshaw"
+    category: "Forensics"
+    description: "Audio analysis and spectrogram"
+    points: 200
+    flag: "CTF{d4wnup5h4w}"
+    type: "file"
+    files:
+      - "dawnupshaw/challenge/dawnupshaw.mp3"
+
+  - id: yayornay
+    name: "Yay or Nay"
+    category: "Forensics"
+    description: "Database steganography with Braille patterns"
+    points: 350
+    flag: "CTF{Y3s_Th4ts_Th3_Fl4g_G00d_J0b}"
+    type: "file"
+    files:
+      - "yayornay/challenge/yayornay.db"
+
+  - id: weathercompanion
+    name: "Weather Companion"
+    category: "Forensics"
+    description: "Android APK reverse engineering"
+    points: 300
+    flag: "CTF{w34th3r_c0mp4n10n}"
+    type: "file"
+    files:
+      - "weathercompanion/distfiles/weathercompanion.apk"
+
+  - id: blink
+    name: "Blink"
+    category: "Forensics"
+    description: "Android reverse engineering with obfuscation"
+    points: 250
+    flag: "CTF{bl1nk_4nd_y0ull_m1ss_1t}"
+    type: "file"
+    files:
+      - "blink/challenge/blink.apk"
+
+  # Reverse Engineering
+  - id: launchcode
+    name: "Launch Code"
+    category: "Reverse Engineering"
+    description: "Windows Calculator binary patching"
+    points: 200
+    flag: "CTF{0FF1C14L_W1ND0W5_C4LCUL4T0R}"
+    type: "file"
+    files:
+      - "launchcode/challenge/calc.exe"
+
+  - id: slashslash
+    name: "Slashslash"
+    category: "Reverse Engineering"
+    description: "Encryption and ZIP file analysis"
+    points: 250
+    flag: "CTF{m4yb3_us3_AES_n3xt_t1m3}"
+    type: "file"
+    files:
+      - "slashslash/challenge/encrypted.zip"
+
+  - id: goodluks
+    name: "Good Luks"
+    category: "Reverse Engineering"
+    description: "Binary patching challenge"
+    points: 300
+    flag: "CTF{g00d_luks_w1th_th4t}"
+    type: "file"
+    files:
+      - "goodluks/challenge/goodluks"
+
+  - id: matryoshka
+    name: "Matryoshka"
+    category: "Reverse Engineering"
+    description: "Email forensics with nested files (Russian doll style)"
+    points: 350
+    flag: "CTF{m4tr10shk4_d011s_4r3_c00l}"
+    type: "file"
+    files:
+      - "bWF0cnlvc2hrYQ/challenge/email.eml"
+
+  # Other
+  - id: svgmagic
+    name: "SVG Magic"
+    category: "Other"
+    description: "SVG file analysis and exploitation"
+    points: 150
+    flag: "CTF{svg_m4g1c_15_r34l}"
+    type: "file"
+    files:
+      - "svgmagic/challenge/magic.svg"
+
+  - id: opendoor
+    name: "Open Door"
+    category: "Other"
+    description: "Miscellaneous challenge"
+    points: 200
+    flag: "CTF{0p3n_d00r_p0l1cy}"
+    type: "file"
+    files:
+      - "opendoor/challenge/opendoor.txt"
+
+  - id: dribbles
+    name: "Dribbles"
+    category: "Other"
+    description: "Miscellaneous puzzle"
+    points: 150
+    flag: "CTF{dr1bbl3_dr1bbl3}"
+    type: "file"
+    files:
+      - "dribbles/challenge/dribbles.txt"
+
+  - id: sequel
+    name: "Sequel"
+    category: "Other"
+    description: "SQL challenge"
+    points: 100
+    flag: "CTF{5qu3l_1nj3ct10n}"
+    type: "file"
+    files:
+      - "sequel/challenge/sequel.sql"
